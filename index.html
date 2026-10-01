@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>제미나이가 분석한 나의 부캐 찾기</title>
+  <style>
+    :root {
+      --primary-color: #600101;
+      --primary-hover: #450101;
+      --bg-color: #f4f6f9;
+      --card-bg: #ffffff;
+      --text-color: #222222;
+    }
+
+    body {
+      font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      margin: 0;
+      padding: 20px 10px;
+    }
+
+    #app {
+      background: var(--card-bg);
+      width: 100%;
+      max-width: 500px;
+      padding: 30px;
+      border-radius: 20px;
+      box-shadow: 0 10px 30px rgba(96, 1, 1, 0.15);
+      text-align: center;
+      box-sizing: border-box;
+      margin: 20px 0; 
+    }
+
+    .screen { display: none; }
+    .screen.active { 
+      display: block; 
+      animation: fadeIn 0.4s ease-in-out; 
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .team-logo {
+      width: 170px; height: 170px;
+      object-fit: cover;
+      margin-top: -20px; margin-bottom: -15px;
+    }
+    .small-logo {
+      width: 90px; height: 90px;
+      object-fit: cover;
+      margin-top: -15px; margin-bottom: -10px;
+    }
+
+    h1 { color: var(--primary-color); font-size: 25px; margin-bottom: 8px; font-weight: 800; }
+    p { color: #666; font-size: 15px; margin-bottom: 20px; line-height: 1.5; }
+
+    button {
+      background-color: var(--primary-color);
+      color: white; border: none; padding: 15px 20px; margin: 10px 0;
+      width: 100%; border-radius: 12px; cursor: pointer; font-size: 16px; font-weight: 600;
+      transition: all 0.2s; box-shadow: 0 4px 10px rgba(96, 1, 1, 0.2);
+    }
+    button:hover { background-color: var(--primary-hover); transform: translateY(-2px); }
+
+    #options-container button {
+      background-color: #ffffff; color: var(--primary-color); border: 2px solid var(--primary-color);
+      text-align: left; padding: 15px; font-size: 15px; font-weight: 500; box-shadow: none; line-height: 1.4;
+    }
+    #options-container button:hover { background-color: var(--primary-color); color: white; }
+
+    #question-title {
+      font-size: 19px; text-align: left; margin-bottom: 25px; color: #222; line-height: 1.5; font-weight: 700;
+    }
+
+    #result-title {
+      color: var(--primary-color); font-size: 24px; margin: 15px 0 25px 0; font-weight: 800; white-space: pre-line;
+    }
+
+    .haikyuu-section {
+      background-color: #222; color: white;
+      border-radius: 15px; padding: 20px; margin-bottom: 20px;
+    }
+    .haikyuu-title { color: #f8c946; font-weight: 700; font-size: 14px; margin-bottom: 5px; }
+    #haikyuu-name { font-size: 20px; margin: 0 0 15px 0; }
+    .haikyuu-photo {
+      width: 100%; max-width: 250px; height: auto;
+      border-radius: 10px; border: 3px solid #f8c946;
+    }
+
+    .result-box {
+      text-align: left; border-radius: 12px; padding: 20px; margin-bottom: 15px; font-size: 15px; line-height: 1.6;
+    }
+    .box-title { font-weight: 800; margin-bottom: 10px; font-size: 16px; display: block; }
+
+    .desc-box { background-color: #fdf2f2; border-left: 5px solid var(--primary-color); }
+    .caution-box { background-color: #f1f3f5; border-left: 5px solid #868e96; }
+    .chemistry-box { background-color: #fff3cd; border: 2px dashed #ffc107; }
+    .gemini-box { background-color: var(--primary-color); color: white; text-align: center; font-weight: 600; font-size: 16px; border-radius: 15px; }
+
+    .team-photo-wrapper { margin-top: 35px; padding-top: 25px; border-top: 2px dashed #ddd; }
+    .join-text { font-weight: 800; color: var(--primary-color); margin-bottom: 15px; font-size: 17px; }
+    .team-photo { width: 100%; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); display: block; }
+  </style>
+</head>
+<body>
+
+  <div id="app">
+    <!-- 1. 시작 화면 -->
+    <div id="intro-screen" class="screen active">
+      <img src="logo.jpg" alt="DT 로고" class="team-logo">
+      <h1>제미나이가 분석한 나의 부캐 찾기</h1>
+      <p>AI 매니저 제미나이가 밝혀내는 DT 배구부 속 나의 진짜 포지션.<br>나와 찰떡인 하이큐 캐릭터는 누구일까요?</p>
+      <button onclick="startTest()">부캐 분석 시작하기</button>
+    </div>
+
+    <!-- 2. 질문 화면 -->
+    <div id="question-screen" class="screen">
+      <img src="logo.jpg" alt="DT 로고" class="small-logo">
+      <h2 id="question-title">질문 들어갈 자리</h2>
+      <div id="options-container"></div>
+    </div>
+
+    <!-- 3. 결과 화면 -->
+    <div id="result-screen" class="screen">
+      <img src="logo.jpg" alt="DT 로고" class="small-logo">
+      <h3 id="result-title">결과 타이틀</h3>
+      
+      <div class="haikyuu-section">
+        <p class="haikyuu-title">🏐 제미나이가 매칭한 하이큐 캐릭터는?</p>
+        <h4 id="haikyuu-name">캐릭터 이름</h4>
+        <img id="haikyuu-img" src="" alt="하이큐 캐릭터" class="haikyuu-photo">
+      </div>
+
+      <div class="result-box desc-box">
+        <span class="box-title">📊 제미나이 심층 분석 리포트</span>
+        <span id="result-desc">결과 설명</span>
+      </div>
+
+      <div class="result-box caution-box">
+        <span class="box-title">🚨 제미나이의 팩트 폭력 & 조언</span>
+        <span id="result-caution">주의사항</span>
+      </div>
+
+      <div class="result-box chemistry-box">
+        <span id="result-chemistry">궁합</span>
+      </div>
+
+      <div class="result-box gemini-box">
+        <span id="result-gemini">한줄평</span>
+      </div>
+      
+      <div class="team-photo-wrapper">
+        <p class="join-text">뜨거운 열정, DT 배구부에서 당신을 기다립니다! 🏐</p>
+        <img src="team.jpg" alt="DT 배구부 단체사진" class="team-photo">
+      </div>
+
+      <button onclick="location.reload()" style="margin-top: 20px;">테스트 다시 하기</button>
+    </div>
+  </div>
+
+  <script>
+    const questions = [
+      {
+        title: "1. 5세트 듀스 매치포인트. DT 벤치에서 AI 매니저 제미나이가 작전을 짜는 사이, 코트로 향하는 당신이 머릿속으로 다짐하는 나의 역할은?",
+        options: [
+          { text: "제미나이의 데이터를 바탕으로 완벽한 궤적의 패스를 올려 노마크 찬스를 만들어주는 역할", type: "A" },
+          { text: "복잡한 계산은 접어두고, 결정적인 순간에 시원한 스파이크로 득점을 내는 영웅의 역할", type: "B" },
+          { text: "상대 에이스의 강타를 온몸을 던져 걷어내어 DT팀의 랠리를 끝까지 이어가는 역할", type: "C" },
+          { text: "상대 세터의 수를 미리 읽고 네트 앞에서 길목을 차단해 셧아웃 시키는 역할", type: "D" },
+          { text: "상대 데이터에 없는 전혀 예상치 못한 타이밍과 위치에서 변칙 공격으로 허를 찌르는 역할", type: "E" }
+        ]
+      },
+      {
+        title: "2. 라이벌 팀과의 결승전 전날, 제미나이가 DT 팀원들에게 '상대 팀 전력 분석 리포트'를 전송했습니다. 이를 확인한 당신의 반응은?",
+        options: [
+          { text: "상대의 약점과 우리 팀의 동선을 머릿속으로 세밀하게 시뮬레이션한다.", type: "A" },
+          { text: "결국 승부는 코트 위에서 내 파워와 기세로 결정된다고 믿는다.", type: "B" },
+          { text: "리시브 동선과 수비 위치부터 꼼꼼하게 체크한다.", type: "C" },
+          { text: "상대 스파이커의 습관과 공격 타이밍을 집중적으로 본다.", type: "D" },
+          { text: "당일 내 컨디션과 직감을 최고로 끌어올리는 데 집중한다.", type: "E" }
+        ]
+      },
+      {
+        title: "3. 경기 중 연속 3실점으로 DT의 코트 분위기가 무겁게 가라앉았습니다. 제미나이가 '팀 멘탈 회복 솔루션'을 계산하고 있을 때, 당신이 먼저 취하는 행동은?",
+        options: [
+          { text: "흥분하지 말고 제미나이가 짚어준 다음 전술을 침착하게 다시 맞추자고 한다.", type: "A" },
+          { text: "파이팅을 크게 외치며 강한 공격 한 방으로 직접 흐름을 끊어버린다.", type: "B" },
+          { text: "동료의 실수를 감싸고 뒤에서 더 든든하게 받쳐주겠다고 다독인다.", type: "C" },
+          { text: "흔들리지 않고 조용히 상대 세터의 움직임을 예리하게 관찰하며 블로킹을 노린다.", type: "D" },
+          { text: "특유의 텐션으로 농담을 던지거나 코트를 방방 뛰며 긴장감을 단번에 풀어준다.", type: "E" }
+        ]
+      },
+      {
+        title: "4. 아뿔싸! 내 뼈아픈 실수로 결정적인 점수를 내줬습니다. 타임아웃 때 제미나이가 리플레이를 보여줄 때, 드는 생각은?",
+        options: [
+          { text: "'패스 높이가 낮았어. 공격수 타점에 맞게 궤적을 즉각 수정해야지.'", type: "A" },
+          { text: "'다음 번엔 무조건 블로커 뚫어버린다. 내 공격력으로 두 배로 만회하면 돼.'", type: "B" },
+          { text: "'발이 느렸어. 넘어지더라도 어떻게든 공 밑으로 파고들어서 살려냈어야 했는데.'", type: "C" },
+          { text: "'점프 타이밍이 빨랐네. 다음엔 상대 공격수 손끝을 끝까지 보고 뜬다.'", type: "D" },
+          { text: "'아쉽네! 그래도 지나간 실수는 빨리 털어버리고 다음 랠리에만 100% 집중하자!'", type: "E" }
+        ]
+      },
+      {
+        title: "5. 훈련이 끝난 후, 제미나이가 'DT 배구부 전력 강화를 위해 능력치 하나를 한계 돌파시켜 줄게요'라고 제안합니다. 당신의 선택은?",
+        options: [
+          { text: "코트 구석구석을 찌르는 자로 잰 듯한 '컴퓨터 토스' 능력", type: "A" },
+          { text: "상대 코트를 박살 낼 듯한 파워풀한 '백어택' 능력", type: "B" },
+          { text: "어떤 강스파이크도 깃털처럼 부드럽게 받아내는 '반사신경 디그' 능력", type: "C" },
+          { text: "상대 공격수를 절망에 빠뜨리는 철벽 같은 '킬 블로킹' 능력", type: "D" },
+          { text: "예측 불가능한 궤적으로 꽂히며 코트를 뒤흔드는 '스파이크 서브' 능력", type: "E" }
+        ]
+      },
+      {
+        title: "6. 제미나이가 당신과 가장 시너지가 좋을 '영혼의 듀오'를 매칭해 주겠다고 합니다. 어떤 동료를 원하나요?",
+        options: [
+          { text: "내 싸인을 찰떡같이 알아듣고 계획한 전술대로 완벽하게 움직여주는 지능적인 선수", type: "A" },
+          { text: "내 공격이 막히거나 실수를 해도 뒤에서 묵묵하고 든든하게 수비를 받쳐주는 선수", type: "B" },
+          { text: "내 수비가 빗나가도 어떻게든 악착같이 득점으로 연결해 내는 믿음직한 에이스", type: "C" },
+          { text: "네트 중앙에서 나와 함께 상대의 모든 공격 루트를 원천 봉쇄할 수 있는 든든한 파트너", type: "D" },
+          { text: "정해진 틀에 얽매이지 않고 창의적이고 변칙적인 플레이를 즐길 수 있는 선수", type: "E" }
+        ]
+      },
+      {
+        title: "7. 삐익-! 우승 확정! 제미나이가 우승의 순간을 기록할 때, 카메라에 담긴 당신의 모습은?",
+        options: [
+          { text: "전술이 딱 맞아떨어진 것에 흡족해하며 팀원들과 여유롭게 하이파이브를 나눈다.", type: "A" },
+          { text: "코트 중심에서 가장 크게 포효하며 관중들과 팀원들의 환호를 적극적으로 유도한다.", type: "B" },
+          { text: "스포트라이트 밖에서 함께 고생한 수비 동료들을 말없이 껴안으며 안도한다.", type: "C" },
+          { text: "크게 흥분하기보다는 옅은 미소를 지으며 조용히 상대 팀 선수들과 악수를 나눈다.", type: "D" },
+          { text: "정체불명의 세리머니 춤을 추며 주체할 수 없는 기쁨을 온몸으로 뿜어낸다.", type: "E" }
+        ]
+      }
+    ];
+
+    const results = {
+      "A": { 
+        title: "🧠 냉철한 코트의 지휘관\n'두뇌파 세터'", 
+        haikyuuName: "코즈메 켄마 (네코마 고교)",
+        haikyuuImg: "kenma.jpg",
+        desc: "제미나이 데이터 분석 결과, 당신은 코트 위에서 일어나는 모든 변수를 초 단위로 통제하려는 완벽주의 지휘관 부캐로 판독되었습니다. 무작정 뛰기보다는 최소한의 움직임으로 최대 효율을 내는 성향이네요.\n\n상대 수비의 허점을 파악해 최적의 토스 길을 설계하는 능력이 탁월하며, 일상에서도 철저한 플랜을 세우는 전략가 타입입니다.",
+        caution: "⚠️ 제미나이의 경고: 완벽한 계획대로 풀리지 않을 때 속으로 엄청난 스트레스를 받는 데이터가 감지됩니다. 때로는 예상치 못한 변수 자체를 즐기는 여유가 필요합니다.",
+        chemistry: "🤝 제미나이 추천 궁합\n💖 <b>환상의 짝꿍:</b> 완벽한 토스를 득점으로 연결하는 '열혈 에이스'\n💔 <b>최악의 상성:</b> 내 계획을 다 흐트러뜨리는 '자유로운 아포짓'",
+        gemini: "💡 \"제미나이의 한줄평: 당신의 치밀한 두뇌 플레이 덕분에 오늘도 DT 배구부의 승률이 99.9% 상승했습니다.\""
+      },
+      "B": { 
+        title: "🔥 불꽃 같은 승부사\n'열혈 에이스'", 
+        haikyuuName: "보쿠토 코타로 (후쿠로다니 학원)",
+        haikyuuImg: "bokuto.jpg",
+        desc: "제미나이 데이터 분석 결과, 당신은 위기 상황에서 폭발적인 에너지를 뿜어내며 팀의 승리를 견인하는 메인 클러치 히터 부캐로 판독되었습니다.\n\n승리를 향한 집념이 남다르며, 시원한 스파이크 한 방으로 가라앉은 팀 분위기를 단숨에 뒤집는 엄청난 파괴력을 가지고 있습니다. 일상에서도 사람들의 시선을 집중시키는 타고난 주인공 재질이네요!",
+        caution: "⚠️️ 제미나이의 경고: 연속으로 공격이 차단될 경우 멘탈 지수가 급격히 하락하는 기복 패턴이 관측됩니다. 혼자 해결하려 하기보다 동료들의 서포트를 믿어보세요.",
+        chemistry: "🤝 제미나이 추천 궁합\n💖 <b>환상의 짝꿍:</b> 내 텐션을 맞춰주는 '두뇌파 세터'\n💔 <b>최악의 상성:</b> 내 불타는 열정을 식히는 '침착한 미들 블로커'",
+        gemini: "💡 \"제미나이의 한줄평: 당신의 뜨거운 투지와 한방 능력은 DT 배구부의 가장 강력한 승리 방정식입니다.\""
+      },
+      "C": { 
+        title: "🛡️ 묵묵한 수호신\n'철벽 방어 리베로'", 
+        haikyuuName: "니시노야 유 (카라스노 고교)",
+        haikyuuImg: "nishinoya.jpg",
+        desc: "제미나이 데이터 분석 결과, 당신은 화려한 득점 뒤에서 온몸을 던져 팀의 붕괴를 막아내는 절대적인 수호신 부캐로 판독되었습니다.\n\n어떤 강타가 날아와도 포기하지 않고 끝까지 공을 살려내는 집념의 소유자이며, 동료들의 멘탈까지 세심하게 케어하는 헌신적인 성향을 지니고 있습니다.",
+        caution: "⚠️ 제미나이의 경고: 타인을 지나치게 챙기느라 본인의 체력 및 멘탈 소모가 극심한 리스크가 있습니다. 수비 하나에 너무 자책하지 말고 동료에게 기대는 데이터도 종종 입력해 주세요.",
+        chemistry: "🤝 제미나이 추천 궁합\n💖 <b>환상의 짝꿍:</b> 내가 살려낸 공을 득점으로 만드는 '열혈 에이스'\n💔 <b>최악의 상성:</b> 방심해서 나를 식겁하게 만드는 '자유로운 아포짓'",
+        gemini: "💡 \"제미나이의 한줄평: 포기하지 않고 끝까지 공을 쫓아가는 당신의 악바리 근성이 DT 배구부의 코트를 든든하게 지켜냅니다.\""
+      },
+      "D": { 
+        title: "🗿 흔들리지 않는 평정심\n'침착한 미들 블로커'", 
+        haikyuuName: "츠키시마 케이 (카라스노 고교)",
+        haikyuuImg: "tsukishima.jpg",
+        desc: "제미나이 데이터 분석 결과, 당신은 어떤 혼란 속에서도 감정 동요가 거의 없는 강철 멘탈의 방어선 부캐로 판독되었습니다.\n\n냉철하게 상대의 움직임을 관찰하다가 결정적인 타이밍에 네트 앞을 완벽하게 봉쇄하는 능력이 뛰어나며, 늘 객관적인 시선으로 팀의 중심을 잡아주는 든든한 브레인입니다.",
+        caution: "⚠️ 제미나이의 경고: 감정 표현을 너무 아끼다 보니 팀원들이 '냉정하다'고 오해할 수 있는 오류 코드가 발견됩니다. 가끔은 기쁠 때 크게 웃는 리액션을 권장합니다.",
+        chemistry: "🤝 제미나이 추천 궁합\n💖 <b>환상의 짝꿍:</b> 찰떡 호흡을 자랑하는 '철벽 방어 리베로'\n💔 <b>최악의 상성:</b> 통제 불능인 '열혈 에이스'",
+        gemini: "💡 \"제미나이의 한줄평: 네트 앞에서 상대를 압도하는 당신의 냉정한 블로킹은 언제나 믿고 보는 확실한 카드입니다.\""
+      },
+      "E": { 
+        title: "⚡ 예측불허 분위기 메이커\n'자유로운 아포짓'", 
+        haikyuuName: "텐도 사토리 (시라토리자와 학원)",
+        haikyuuImg: "tendou.jpg",
+        desc: "제미나이 데이터 분석 결과, 당신은 정형화된 패턴을 거부하고 오직 본능적인 감각과 직감으로 상대를 교란하는 변칙의 마술사 부캐로 판독되었습니다.\n\n예측할 수 없는 플레이와 특유의 유쾌한 에너지로 팀 전체에 활력을 불어넣으며, 지루할 틈 없는 재미를 선사하는 타고난 엔터테이너입니다.",
+        caution: "⚠️ 제미나이의 경고: 지나친 즉흥성과 돌발 행동으로 인해 감독님의 이마에 주름이 늘어날 수 있습니다. 때로는 팀의 전술적 약속을 준수하는 데이터 프로그래밍이 필요합니다.",
+        chemistry: "🤝 제미나이 추천 궁합\n💖 <b>환상의 짝꿍:</b> 내 엉뚱한 플레이를 받아주는 '두뇌파 세터'\n💔 <b>최악의 상성:</b> 내 농담을 진지하게 팩트로 받는 '침착한 미들 블로커'",
+        gemini: "💡 \"제미나이의 한줄평: 예측 불가한 당신의 플레이와 넘치는 끼는 DT 배구부의 가장 짜릿한 무기입니다.\""
+      }
+    };
+
+    let currentQuestionIndex = 0;
+    let scores = { A: 0, B: 0, C: 0, D: 0, E: 0 };
+
+    function startTest() {
+      document.getElementById('intro-screen').classList.remove('active');
+      document.getElementById('question-screen').classList.add('active');
+      showQuestion();
+    }
+
+    function showQuestion() {
+      const q = questions[currentQuestionIndex];
+      document.getElementById('question-title').innerText = q.title;
+      
+      const optionsContainer = document.getElementById('options-container');
+      optionsContainer.innerHTML = '';
+      
+      const shuffledOptions = [...q.options].sort(() => Math.random() - 0.5);
+      
+      shuffledOptions.forEach(option => {
+        const btn = document.createElement('button');
+        btn.innerText = option.text;
+        btn.onclick = () => selectOption(option.type);
+        optionsContainer.appendChild(btn);
+      });
+    }
+
+    function selectOption(type) {
+      scores[type]++;
+      currentQuestionIndex++;
+      
+      if (currentQuestionIndex < questions.length) {
+        showQuestion();
+      } else {
+        showResult();
+      }
+    }
+
+    function showResult() {
+      document.getElementById('question-screen').classList.remove('active');
+      document.getElementById('result-screen').classList.add('active');
+      
+      let maxType = Object.keys(scores).reduce((a, b) => scores[a] > scores[b] ? a : b);
+      let res = results[maxType];
+      
+      document.getElementById('result-title').innerText = res.title;
+      document.getElementById('haikyuu-name').innerText = res.haikyuuName;
+      document.getElementById('haikyuu-img').src = res.haikyuuImg;
+      
+      document.getElementById('result-desc').innerHTML = res.desc.replace(/\n/g, '<br>');
+      document.getElementById('result-caution').innerHTML = res.caution.replace(/\n/g, '<br>');
+      document.getElementById('result-chemistry').innerHTML = res.chemistry.replace(/\n/g, '<br>');
+      document.getElementById('result-gemini').innerText = res.gemini;
+    }
+  </script>
+</body>
+</html>
